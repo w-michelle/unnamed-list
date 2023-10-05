@@ -27,7 +27,7 @@ interface Post {
   title: string;
 }
 
-const NoteUpload = () => {
+const NoteUpload = ({ catData }: any) => {
   const [noteObj, setNoteObj] = useState({
     title: "",
     noteDesc: "",
@@ -36,11 +36,11 @@ const NoteUpload = () => {
 
   const [posts, setPosts] = useState<Post[]>([]);
 
-  const cartStore = useCategoryModal();
+  const store = useCategoryModal();
 
   const [isLoading, setIsLoading] = useState(false);
   const param = useParams();
-  const city = param.categoryTitle[0];
+  const city = catData.city;
 
   const handleChange = (e: any) => {
     if (e.target.name === "noteImg") {
@@ -58,8 +58,9 @@ const NoteUpload = () => {
     data.append("image", noteObj.noteImg);
     data.append("title", noteObj.title);
     data.append("desc", noteObj.noteDesc);
-    data.append("category", param.categoryTitle[1].toString());
+    data.append("category", catData.title);
     data.append("city", city);
+    data.append("catId", catData.id);
     // data.set('file', noteObj.noteImg)
     try {
       await axios.post("/api/upload", data);
@@ -79,7 +80,7 @@ const NoteUpload = () => {
     const getPosts = async () => {
       try {
         const response = await axios.get(
-          `/api/getPosts?city=${city}&category=${param.categoryTitle[1]}`
+          `/api/getPosts?city=${city}&category=${catData.title}`
         );
 
         setPosts(response.data);
@@ -91,10 +92,10 @@ const NoteUpload = () => {
   }, [noteObj]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-10 bg-">
+    <div className="flex flex-col gap-10 bg-">
       <section className=" w-full">
         <form onSubmit={onSubmit} className="flex">
-          <div className="flex flex-col  gap-2 p-3 border-dashed border-2 border-slate-300 mt-4">
+          <div className="flex flex-col gap-2 p-3 border-dashed border-2 border-slate-300 mt-4">
             <input
               type="text"
               name="title"
@@ -102,10 +103,11 @@ const NoteUpload = () => {
               value={noteObj.title}
               placeholder="title"
               className="p-3 outline-none"
+              disabled={isLoading}
             />
-            <div className="flex gap-4">
+            <div className="flex gap-4 w-[600px]">
               {noteObj.noteImg !== "" ? (
-                <div className="relative w-[400px] h-[200px] bg-black text-[#CCE2CC] rounded-md border-[0.05rem] border-grey hover:cursor-pointer transition">
+                <div className="relative w-[200px] h-[100px] bg-black text-[#CCE2CC] rounded-md border-[0.05rem] border-grey hover:cursor-pointer transition">
                   <div className="flex flex-col items-center justify-center -translate-y-1/2 -translate-x-1/2 absolute left-1/2 top-1/2  ">
                     <FolderCheck size={28} />
                   </div>
@@ -115,7 +117,7 @@ const NoteUpload = () => {
                   htmlFor="noteFileImg"
                   className="relative w-[400px] h-[200px] bg-[#e4e4e7] rounded-md border-[0.05rem] border-grey hover:bg-black text-[#a1a1aa] hover:text-white hover:cursor-pointer transition"
                 >
-                  <div className="flex flex-col items-center justify-center -translate-y-1/2 -translate-x-1/2 absolute left-1/2 top-1/2  ">
+                  <div className="w-full flex flex-col items-center justify-center -translate-y-1/2 -translate-x-1/2 absolute left-1/2 top-1/2  ">
                     <Upload size={32} strokeWidth={1} />
                     <p>Upload Image</p>
                   </div>
@@ -146,7 +148,7 @@ const NoteUpload = () => {
             </div>
             <input
               type="submit"
-              value="Add"
+              value={isLoading ? "Loading..." : "Add"}
               className="p-3 bg-[#e4e4e7] text-black rounded-md hover:cursor-pointer hover:bg-[#CCE2CC] hover:text-black"
               disabled={isLoading}
             />

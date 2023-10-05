@@ -46,7 +46,8 @@ export const CategoryModal = () => {
         city: cartStore.cart[0].title,
       });
       form.reset();
-
+      categoryModal.onClose();
+      categoryModal.categoryChange();
       fetchCategories();
       //after adding to db, fetch a add it to the store and then the sidebar will render from the store
     } catch (error: any) {
@@ -90,10 +91,3 @@ export const CategoryModal = () => {
     </Dialog>
   );
 };
-
-// city: {
-//   id: searchParams.get("id"),
-//   title: searchParams.get("title"),
-//   userId: searchParams.get("userId"),
-//   createdAt: searchParams.get("createdAt"),
-// },

@@ -13,13 +13,13 @@ interface CategoryProps {
 }
 
 export const Sidebar = () => {
-  const categoryModal = useCategoryModal();
+  const store = useCategoryModal();
   const params = useParams();
   const cartStore = useCategoryModal();
   const city = params.cityTitle ? params.cityTitle : params.categoryTitle[0];
 
   const pathname = usePathname();
-
+  const router = useRouter();
   //add new category and push
 
   const categories = cartStore.categories[0];
@@ -28,7 +28,9 @@ export const Sidebar = () => {
       const response = await axios.delete("/api/deleteCat", {
         data: { id: id },
       });
+
       fetchCategories();
+      router.back();
       console.log(response);
     } catch (error) {
       console.log(error);
@@ -44,13 +46,13 @@ export const Sidebar = () => {
   };
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [store.category]);
 
   return (
     <div className="absolute top-14 w-56 border-r-[1px] border-gray h-[110vh] flex flex-col items-center">
       <div className="border-2 border-gray p-2 mt-4 hover:border-black">
         <button
-          onClick={categoryModal.onOpen}
+          onClick={store.onOpen}
           className="flex items-center justify-center"
         >
           <Plus />
@@ -63,7 +65,10 @@ export const Sidebar = () => {
           categories.map((category, index) => (
             <Link
               key={index}
-              href={`/category/${city}/${category.title}`}
+              href={{
+                pathname: `/category/${city}/${category.title}`,
+                query: { ...category },
+              }}
               className={`${
                 pathname.includes("/category") &&
                 params.categoryTitle[1] === category.title

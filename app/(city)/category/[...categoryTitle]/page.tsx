@@ -1,11 +1,16 @@
 import NoteUpload from "@/components/noteUpload";
 import { Plus } from "lucide-react";
-
-const Page = () => {
+interface Category {
+  id: string;
+  title: string;
+  userId: String;
+  city: String;
+}
+const Page = ({ searchParams }: any) => {
   return (
     <div className="pl-60">
       <div>
-        <NoteUpload />
+        <NoteUpload catData={searchParams} />
       </div>
     </div>
   );

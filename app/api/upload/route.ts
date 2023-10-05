@@ -55,7 +55,10 @@ export async function POST(req: NextRequest, res: NextResponse) {
       };
       //save to database
       const post = await prisma?.item.create({
-        data: data,
+        data: {
+          ...data,
+          Category: { connect: { id: formData.get("catId")?.toString() } },
+        },
       });
       return NextResponse.json(post);
     } else {
@@ -69,7 +72,10 @@ export async function POST(req: NextRequest, res: NextResponse) {
       };
       //save to database
       const post = await prisma?.item.create({
-        data: data,
+        data: {
+          ...data,
+          Category: { connect: { id: formData.get("catId")?.toString() } },
+        },
       });
       return NextResponse.json(post);
     }

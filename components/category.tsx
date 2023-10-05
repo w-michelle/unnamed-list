@@ -31,7 +31,7 @@ const Category: React.FC<CategoryProps> = ({ title, id, onDelete }) => {
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
-            <MoreHorizontal size={14} />
+            {<MoreHorizontal size={10} />}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px]">
