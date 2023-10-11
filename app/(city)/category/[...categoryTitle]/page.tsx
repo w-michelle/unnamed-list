@@ -8,7 +8,7 @@ interface Category {
 }
 const Page = ({ searchParams }: any) => {
   return (
-    <div className="pl-60">
+    <div className="md:pl-60">
       <div>
         <NoteUpload catData={searchParams} />
       </div>

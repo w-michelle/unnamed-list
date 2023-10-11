@@ -27,7 +27,7 @@ const Category: React.FC<CategoryProps> = ({ title, id, onDelete }) => {
 
   return (
     <div className="flex items-center justify-between">
-      <p>{title}</p>
+      <p className="text-left">{title}</p>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">

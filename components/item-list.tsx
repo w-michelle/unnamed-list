@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { PostBar } from "./post-bar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 import { cutive } from "@/app/fonts";
+import axios from "axios";
+import { Item } from "@/types/types";
+import { useCategoryModal } from "@/hooks/use-category-modal";
 
 interface Post {
   city: string;
@@ -16,13 +19,17 @@ interface Post {
 }
 
 interface ItemListProps {
-  posts: Post[];
+  data: {
+    city: string | null;
+    catTitle: string | null;
+  };
 }
 
-const ItemList = ({ posts }: ItemListProps) => {
+const ItemList = (data: ItemListProps) => {
   const [currentPost, setCurrentPost] = useState<Post>();
   const [open, setOpen] = useState(false);
-
+  const [postList, setPostList] = useState<Item[]>();
+  const store = useCategoryModal();
   const handleClick = (post: Post) => {
     setCurrentPost(post);
     console.log(post);
@@ -32,19 +39,27 @@ const ItemList = ({ posts }: ItemListProps) => {
   const handleClose = () => {
     setOpen(!open);
   };
+  useEffect(() => {
+    const getPosts = async () => {
+      try {
+        const response = await axios.get(
+          `/api/getPosts?city=${data.data.city}&category=${data.data.catTitle}`
+        );
+        console.log("city is:", data.data.city);
+        console.log("category is:", data.data.catTitle);
+        console.log("get post:", response.data);
+        setPostList(response.data);
+      } catch (error: any) {
+        console.log(error);
+      }
+    };
+    getPosts();
+  }, [store.itemList]);
 
   return (
-    <div className={`${cutive.className}`}>
-      {/* <div
-        className={`${
-          !open ? "hidden" : ""
-        } w-[500px] h-screen bg-red-300 absolute top-0 right-0 p-4`}
-      >
-        <PostBar post={currentPost} handleClose={handleClose} />
-      </div> */}
-
+    <div className={`${cutive.className} mt-2`}>
       <div className="flex flex-col gap-4">
-        {posts.map((post, index) => (
+        {postList?.map((post, index) => (
           <Link
             href={{ pathname: `/post/${post.title}`, query: { ...post } }}
             key={index}

@@ -9,9 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCategoryModal } from "@/hooks/use-category-modal";
 import axios from "axios";
-import { formSchema } from "@/app/(city)/city/[cityTitle]/category-constants";
+import { formSchema } from "@/app/(city)/city/[...cityTitle]/category-constants";
 import { toast } from "react-hot-toast";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export const CategoryModal = () => {
   const categoryModal = useCategoryModal();
@@ -25,30 +26,34 @@ export const CategoryModal = () => {
       category: "",
     },
   });
-  const param = useParams();
-  const city = param.cityTitle;
+
+  const searchParams = useSearchParams();
+  const city = searchParams.get("cityTitle") || searchParams.get("city");
+  const cityId = searchParams.get("cityId");
 
   const isLoading = form.formState.isSubmitting;
 
-  const fetchCategories = async () => {
-    try {
-      const response = await axios.get(`/api/getCategory?city=${city}`);
-      cartStore.addCategories(response.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  };
+  // const fetchCategories = async () => {
+  //   try {
+  //     const response = await axios.get(`/api/getCategory?city=${city}`);
+  //     cartStore.addCategories(response.data);
+  //   } catch (error: any) {
+  //     console.log(error);
+  //   }
+  // };
+  //dont need to fetch bc side bar already fetches when there is changes to add category
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await axios.post("/api/category", {
         categories: values.category.toLowerCase(),
-        city: cartStore.cart[0].title,
+        city: city,
+        cityId: cityId,
       });
       form.reset();
       categoryModal.onClose();
       categoryModal.categoryChange();
-      fetchCategories();
+      // fetchCategories();
       //after adding to db, fetch a add it to the store and then the sidebar will render from the store
     } catch (error: any) {
       if (error.response.status === 501) {

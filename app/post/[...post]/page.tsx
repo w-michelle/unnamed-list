@@ -3,25 +3,25 @@
 import { cutive } from "@/app/fonts";
 import { Input } from "@/components/ui/input";
 import { dateFormat2 } from "@/lib/dateFormat";
+
 import axios from "axios";
 import { ArrowLeft, Pencil, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-interface Post {
-  city: string;
-  createdAt: string;
-  description: string;
+type City = {
   id: string;
-  imageSrc: string;
-  imageUrl: string;
-  itemCategory: string;
+  title: string;
+  createdAt: string;
+};
+type Category = {
+  id: string;
   title: string;
   userId: string;
-}
-
+  city: string;
+};
 const Post = ({ searchParams }: any) => {
   const {
     title,
@@ -37,6 +37,7 @@ const Post = ({ searchParams }: any) => {
   const [edit, setEdit] = useState(false);
   const [editImg, setEditImg] = useState(false);
   const [desc, setDesc] = useState(description);
+  const [postTitle, setPostTitle] = useState(title);
   const [post, setPost] = useState({
     title,
     itemCategory,
@@ -47,16 +48,18 @@ const Post = ({ searchParams }: any) => {
     createdAt,
     id,
   });
+  const [category, setCategory] = useState<Category>();
+  const [cityObj, setCityObj] = useState<City>();
 
   const update = async (value: any, prop: string) => {
     console.log(value);
     console.log(prop);
 
-    if (prop === "desc") {
+    if (prop === "text") {
       try {
         const response = await axios.put("/api/updateText", {
           id: id,
-          description: desc,
+          text: value,
         });
         setEdit(!edit);
         setPost(response.data);
@@ -79,6 +82,20 @@ const Post = ({ searchParams }: any) => {
     }
   };
 
+  useEffect(() => {
+    const fetchCategory = async () => {
+      const catRes = await axios.get(
+        `/api/getCategory?city=${city}&category=${itemCategory}`
+      );
+
+      setCategory(catRes.data);
+      const cityRes = await axios.get(`/api/getCity?city=${city}`);
+      console.log("city", cityRes.data);
+      setCityObj(cityRes.data);
+    };
+    fetchCategory();
+  }, []);
+
   return (
     <div className={`${cutive.className} bg-grayGreen h-screen`}>
       <nav className=" flex justify-between p-4 border-b-[1px] border-gray">
@@ -88,23 +105,43 @@ const Post = ({ searchParams }: any) => {
             className="hover:cursor-pointer"
             onClick={() => router.back()}
           />
-          <p>
-            /<Link href={`/city/${post.city}`}>{post.city}</Link>/
-            <button onClick={() => router.back()}> {post.itemCategory}</button>/
-            {post.title}
-          </p>
+          <div>
+            /
+            <Link
+              href={{
+                pathname: `/city/${post?.city}`,
+                query: {
+                  ...cityObj,
+                  cityTitle: cityObj?.title,
+                  cityId: cityObj?.id,
+                },
+              }}
+            >
+              {post?.city}
+            </Link>
+            /
+            <Link
+              href={{
+                pathname: `/category/${city}/${post?.itemCategory}`,
+                query: { ...category, cityId: cityObj?.id },
+              }}
+            >
+              {post?.itemCategory}
+            </Link>
+            /{post?.title}
+          </div>
         </div>
         <div>
-          <p>{dateFormat2(post.createdAt)}</p>
+          <p>{dateFormat2(post?.createdAt)}</p>
         </div>
       </nav>
 
       <section className="flex flex-col  gap-4 p-4 border-red-500 border-2">
         {/* if theres image upload image else display upload */}
-        {post.imageUrl ? (
+        {post?.imageUrl ? (
           <div className="flex gap-2">
             <div className="relative w-[200px] h-[200px]">
-              <Image alt="Post Image" src={post.imageUrl} fill />
+              <Image alt="Post Image" src={post?.imageUrl} fill />
             </div>
             <label
               htmlFor="noteFileImg"
@@ -143,25 +180,31 @@ const Post = ({ searchParams }: any) => {
           </label>
         )}
 
-        <p>Title:{post.title}</p>
         <div>
           {!edit ? (
-            <div className="flex items-center gap-2">
-              <p>Description:{post.description}</p>
-              <Pencil
-                className="hover:cursor-pointer"
-                size={14}
-                onClick={() => setEdit(true)}
-              />
-            </div>
+            <>
+              <p>Title:{post?.title}</p>
+              <div className="flex items-center gap-2">
+                <p>Description:{post?.description}</p>
+                <Pencil
+                  className="hover:cursor-pointer"
+                  size={14}
+                  onClick={() => setEdit(true)}
+                />
+              </div>
+            </>
           ) : (
-            <div>
+            <div className="flex flex-col gap-4">
+              <textarea
+                value={postTitle}
+                onChange={(e) => setPostTitle(e.target.value)}
+              ></textarea>
               <textarea
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
               ></textarea>
               <button
-                onClick={() => update(desc, "desc")}
+                onClick={() => update({ desc: desc, title: postTitle }, "text")}
                 className="px-3 bg-green-500"
               >
                 done

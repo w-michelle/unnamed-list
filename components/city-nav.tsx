@@ -5,7 +5,7 @@ import { dateFormat2 } from "@/lib/dateFormat";
 import axios from "axios";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface CityProp {
@@ -19,8 +19,8 @@ export const CityNav = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [cityInfo, setCityInfo] = useState<CityProp>();
   const param = useParams();
-
-  const city = param.cityTitle ? param.cityTitle : param.categoryTitle[0];
+  const searchParams = useSearchParams();
+  const city = searchParams.get("city") || searchParams.get("cityTitle");
   useEffect(() => {
     setIsLoading(true);
     const getCity = async () => {
@@ -42,11 +42,22 @@ export const CityNav = () => {
         <ArrowLeft size={16} />
         <p>Home</p>
       </Link>
-      <h1 className={`${special.className} tracking-[0.2rem]`}>
-        {cityInfo &&
-          cityInfo?.title.charAt(0).toUpperCase() +
-            cityInfo?.title.slice(1).toLowerCase()}
-      </h1>
+      <Link
+        href={{
+          pathname: `/city/${cityInfo?.title}`,
+          query: {
+            ...cityInfo,
+            cityTitle: cityInfo?.title,
+            cityId: cityInfo?.id,
+          },
+        }}
+      >
+        <h1 className={`${special.className} tracking-[0.2rem]`}>
+          {cityInfo &&
+            cityInfo?.title.charAt(0).toUpperCase() +
+              cityInfo?.title.slice(1).toLowerCase()}
+        </h1>
+      </Link>
       <p>{dateFormat2(cityInfo?.createdAt)}</p>
     </nav>
   );

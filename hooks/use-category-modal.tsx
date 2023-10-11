@@ -12,12 +12,15 @@ interface ModalStore {
   addCategories: (item: Category) => void;
   category: boolean;
   categoryChange: () => void;
+  itemList: boolean;
+  itemChange: () => void;
 }
 
 export const useCategoryModal = create<ModalStore>((set) => ({
   cart: [],
   isOpen: false,
   category: false,
+  itemList: false,
   onOpen: () => set({ isOpen: true }),
   onClose: () => set({ isOpen: false }),
   addCity: (item) =>
@@ -38,4 +41,5 @@ export const useCategoryModal = create<ModalStore>((set) => ({
       return { categories: [item] };
     }),
   categoryChange: () => set({ category: true }),
+  itemChange: () => set({ itemList: true }),
 }));

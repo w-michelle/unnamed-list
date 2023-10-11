@@ -8,7 +8,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { categories, city } = body;
+    const { categories, city, cityId } = body;
 
     if (!categories) {
       return new NextResponse("Enter a category", { status: 400 });
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     if (!existingCategory) {
       await prisma.category.create({
-        data: categoryData,
+        data: { ...categoryData, Cities: { connect: { id: cityId } } },
       });
       return new NextResponse(null, { status: 200 });
     } else {

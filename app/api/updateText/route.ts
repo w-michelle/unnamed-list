@@ -3,16 +3,20 @@ import { NextResponse } from "next/server";
 
 export async function PUT(req: Request, res: Response) {
   const { userId } = auth();
-  const { id, description } = await req.json();
+  const { id, text } = await req.json();
   try {
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    const post = await prisma?.item.update({
+    await prisma?.item.update({
       where: { id: id },
       data: {
-        description: description,
+        title: text.title,
+        description: text.desc,
       },
+    });
+    const post = await prisma?.item.findFirst({
+      where: { id: id },
     });
     return NextResponse.json(post);
   } catch (error) {

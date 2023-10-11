@@ -111,6 +111,8 @@ export default function Dashboard() {
                   pathname: `/city/${city.title}`,
                   query: {
                     ...city,
+                    cityTitle: city.title,
+                    cityId: city.id,
                   },
                 }}
                 key={index}

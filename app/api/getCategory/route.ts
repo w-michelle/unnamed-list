@@ -1,23 +1,30 @@
 import prisma from "@/lib/prismadb";
 import { auth } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
-  const { userId } = auth();
-  const user = await currentUser();
   const url = new URL(req.url);
-  const searchParams = new URLSearchParams(url.search);
-  const city = searchParams.get("city");
+  const search = new URLSearchParams(url.search);
+  const category = search.get("category");
+  const city = search.get("city");
+  const { userId } = auth();
 
-  // const city = searchParams.get(city)
+  console.log(city, category);
 
-  if (!userId) {
-    return new NextResponse("Unauthorized", { status: 401 });
+  try {
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const findCategory = await prisma.category.findFirst({
+      where: {
+        userId: userId,
+        city: city?.toString(),
+        title: category?.toString(),
+      },
+    });
+    return NextResponse.json(findCategory);
+  } catch (error) {
+    console.log(error);
   }
-
-  const categories = await prisma.category.findMany({
-    where: { userId: userId, city: city },
-  });
-  return NextResponse.json(categories);
 }

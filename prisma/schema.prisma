@@ -24,7 +24,7 @@ model Category {
   userId   String
   items    Item[]
   city     String?
-  Cities   Cities? @relation(fields: [citiesId], references: [id])
+  Cities   Cities? @relation(fields: [citiesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   citiesId String?
 }
 

@@ -5,12 +5,13 @@ import { Input } from "./ui/input";
 import { useEffect, useState } from "react";
 
 import axios from "axios";
-import { FolderCheck, Upload } from "lucide-react";
-import { useParams } from "next/navigation";
+import { ChevronDown, ChevronUp, FolderCheck, Upload } from "lucide-react";
+import { useParams, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useCategoryModal } from "@/hooks/use-category-modal";
 import Image from "next/image";
 import ItemList from "./item-list";
+import { cutive } from "@/app/fonts";
 
 interface NoteObj {
   title: string;
@@ -35,12 +36,13 @@ const NoteUpload = ({ catData }: any) => {
   });
 
   const [posts, setPosts] = useState<Post[]>([]);
-
+  const [open, setOpen] = useState(false);
   const store = useCategoryModal();
 
   const [isLoading, setIsLoading] = useState(false);
   const param = useParams();
-  const city = catData.city;
+  const searchParams = useSearchParams();
+  const city = searchParams.get("city");
 
   const handleChange = (e: any) => {
     if (e.target.name === "noteImg") {
@@ -59,13 +61,14 @@ const NoteUpload = ({ catData }: any) => {
     data.append("title", noteObj.title);
     data.append("desc", noteObj.noteDesc);
     data.append("category", catData.title);
-    data.append("city", city);
+    data.append("city", city!);
     data.append("catId", catData.id);
     // data.set('file', noteObj.noteImg)
     try {
       await axios.post("/api/upload", data);
 
       setNoteObj({ title: "", noteDesc: "", noteImg: "" });
+      store.itemChange();
     } catch (error: any) {
       if (error?.response?.status === 400) {
         toast.error("Title is required");
@@ -76,88 +79,90 @@ const NoteUpload = ({ catData }: any) => {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    const getPosts = async () => {
-      try {
-        const response = await axios.get(
-          `/api/getPosts?city=${city}&category=${catData.title}`
-        );
-
-        setPosts(response.data);
-      } catch (error: any) {
-        console.log(error);
-      }
-    };
-    getPosts();
-  }, [noteObj]);
-
   return (
-    <div className="flex flex-col gap-10 bg-">
-      <section className=" w-full">
-        <form onSubmit={onSubmit} className="flex">
-          <div className="flex flex-col gap-2 p-3 border-dashed border-2 border-slate-300 mt-4">
-            <input
-              type="text"
-              name="title"
-              onChange={handleChange}
-              value={noteObj.title}
-              placeholder="title"
-              className="p-3 outline-none"
-              disabled={isLoading}
-            />
-            <div className="flex gap-4 w-[600px]">
-              {noteObj.noteImg !== "" ? (
-                <div className="relative w-[200px] h-[100px] bg-black text-[#CCE2CC] rounded-md border-[0.05rem] border-grey hover:cursor-pointer transition">
-                  <div className="flex flex-col items-center justify-center -translate-y-1/2 -translate-x-1/2 absolute left-1/2 top-1/2  ">
-                    <FolderCheck size={28} />
-                  </div>
-                </div>
-              ) : (
-                <label
-                  htmlFor="noteFileImg"
-                  className="relative w-[400px] h-[200px] bg-[#e4e4e7] rounded-md border-[0.05rem] border-grey hover:bg-black text-[#a1a1aa] hover:text-white hover:cursor-pointer transition"
-                >
-                  <div className="w-full flex flex-col items-center justify-center -translate-y-1/2 -translate-x-1/2 absolute left-1/2 top-1/2  ">
-                    <Upload size={32} strokeWidth={1} />
-                    <p>Upload Image</p>
-                  </div>
-                  <Input
-                    type="file"
-                    name="noteImg"
-                    id="noteFileImg"
-                    disabled={isLoading}
-                    placeholder=""
-                    onChange={handleChange}
-                    className="hidden"
-                  />
-                </label>
-              )}
-              <label htmlFor="noteDesc" className="flex">
-                <textarea
-                  rows={4}
-                  cols={40}
-                  id="noteDesc"
-                  name="noteDesc"
-                  disabled={isLoading}
-                  placeholder="Description"
-                  value={noteObj.noteDesc}
-                  onChange={handleChange}
-                  className="h-[200px] w-[400px] resize-none outline-none p-3"
-                />
-              </label>
+    <div className={`${cutive.className} flex flex-col gap-10 mx-4`}>
+      <section className="w-full flex justify-center border-2 border-red-300 my-4 relative">
+        {open ? (
+          <>
+            <div className="w-full absolute">
+              <ChevronUp
+                onClick={() => setOpen(!open)}
+                className="hover:cursor-pointer transition ml-auto"
+              />
             </div>
-            <input
-              type="submit"
-              value={isLoading ? "Loading..." : "Add"}
-              className="p-3 bg-[#e4e4e7] text-black rounded-md hover:cursor-pointer hover:bg-[#CCE2CC] hover:text-black"
-              disabled={isLoading}
+            <form onSubmit={onSubmit} className="flex">
+              <div className="w-[300px] flex flex-col items-center justify-center gap-2 p-3 border-dashed border-2 border-slate-300 mt-4">
+                <input
+                  type="text"
+                  name="title"
+                  onChange={handleChange}
+                  value={noteObj.title}
+                  placeholder="title"
+                  className="p-3 outline-none w-[270px]"
+                  disabled={isLoading}
+                />
+                <div className="flex items-center justify-center gap-4 w-[600px]">
+                  {noteObj.noteImg !== "" ? (
+                    <div className="relative w-[100px] h-[200px] bg-black text-[#CCE2CC] rounded-md border-[0.05rem] border-grey hover:cursor-pointer transition">
+                      <div className="flex flex-col items-center justify-center -translate-y-1/2 -translate-x-1/2 absolute left-1/2 top-1/2  ">
+                        <FolderCheck size={28} />
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="noteFileImg"
+                      className="relative w-[100px] h-[200px] bg-[#e4e4e7] rounded-md border-[0.05rem] border-grey hover:bg-black text-[#a1a1aa] hover:text-white hover:cursor-pointer transition"
+                    >
+                      <div className="w-full flex flex-col items-center justify-center -translate-y-1/2 -translate-x-1/2 absolute left-1/2 top-1/2  ">
+                        <Upload size={20} strokeWidth={1} />
+                        <p className="text-sm text-center mt-2">Upload Image</p>
+                      </div>
+                      <Input
+                        type="file"
+                        name="noteImg"
+                        id="noteFileImg"
+                        disabled={isLoading}
+                        placeholder=""
+                        onChange={handleChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                  <label htmlFor="noteDesc" className="flex">
+                    <textarea
+                      rows={4}
+                      cols={40}
+                      id="noteDesc"
+                      name="noteDesc"
+                      disabled={isLoading}
+                      placeholder="Description"
+                      value={noteObj.noteDesc}
+                      onChange={handleChange}
+                      className="h-[200px] w-[150px] resize-none outline-none p-3"
+                    />
+                  </label>
+                </div>
+                <input
+                  type="submit"
+                  value={isLoading ? "Loading..." : "Add"}
+                  className="p-3 w-[270px] bg-[#e4e4e7] text-black rounded-md hover:cursor-pointer hover:bg-[#CCE2CC] hover:text-black"
+                  disabled={isLoading}
+                />
+              </div>
+            </form>
+          </>
+        ) : (
+          <div className="flex">
+            <p>Add a note ...</p>
+            <ChevronDown
+              onClick={() => setOpen(!open)}
+              className="hover:cursor-pointer transition ml-auto"
             />
           </div>
-        </form>
+        )}
       </section>
-
-      <section className=" w-full">
-        <ItemList posts={posts} />
+      <section className=" w-full border-blue-500 border-2">
+        <ItemList data={{ city: city, catTitle: catData.title }} />
       </section>
     </div>
   );
